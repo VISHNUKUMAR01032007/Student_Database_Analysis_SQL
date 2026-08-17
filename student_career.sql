@@ -255,3 +255,161 @@ HAVING COUNT(Department) > 10;
 SELECT Job_Goal,AVG(Expected_Salary) FROM StudentCareer
 GROUP BY Job_Goal
 HAVING AVG(Expected_Salary) > 1200000;
+
+--  Q30. Write an SQL query to categorize students based on CGPA as:
+--  Poor (<6) 
+-- Average (6 to 8) 
+-- Excellent (>8) 
+SELECT Student_ID, Student_Name, CGPA,
+    CASE
+        WHEN CGPA < 6 THEN 'Poor'
+        WHEN CGPA BETWEEN 6 AND 8 THEN 'Average'
+        ELSE 'Excellent'
+    END AS CGPA_Category
+FROM StudentCareer;
+
+ -- Q31. Write an SQL query to categorize students as:
+-- Fresher 
+-- Junior 
+-- Experienced 
+-- based on their years of experience.
+SELECT Student_ID, Student_Name, Experience_Years,
+    CASE
+        WHEN Experience_Years = 0 THEN 'Fresher'
+        WHEN Experience_Years > 0 AND Experience_Years <= 1 THEN 'Junior'
+        ELSE 'Experienced'
+    END AS Experience_Category
+FROM StudentCareer;
+
+-- Q32. Write an SQL query to classify students' salary expectation as:
+-- Low 
+-- Medium 
+-- High 
+-- using the CASE WHEN statement.
+SELECT Student_ID, Student_Name, Expected_Salary,
+    CASE
+        WHEN Expected_Salary < 700000 THEN 'Low'
+        WHEN Expected_Salary BETWEEN 700000 AND 1200000 THEN 'Medium'
+        ELSE 'High'
+    END AS Salary_Category
+FROM StudentCareer;
+
+-- Q33. Write an SQL query to assign row numbers to students based on CGPA in descending order.
+SELECT Student_ID, Student_Name, CGPA,
+    ROW_NUMBER() OVER (ORDER BY CGPA DESC) AS Row_Num
+FROM StudentCareer;
+
+-- Q34. Write an SQL query to assign row numbers to students within each department based on CGPA.
+SELECT Student_ID, Student_Name, Department, CGPA,
+    ROW_NUMBER() OVER (PARTITION BY Department ORDER BY CGPA DESC) AS Row_Num
+FROM StudentCareer;
+
+-- Q35. Write an SQL query to rank students according to their CGPA.
+SELECT Student_ID, Student_Name, CGPA,
+    RANK() OVER (ORDER BY CGPA DESC) AS CGPA_Rank
+FROM StudentCareer;
+
+-- Q36. Write an SQL query to rank students according to their expected salary.
+SELECT Student_ID, Student_Name, Expected_Salary,
+    RANK() OVER (ORDER BY Expected_Salary DESC) AS Salary_Rank
+FROM StudentCareer;
+
+-- Q37. Using a Common Table Expression (CTE), write an SQL query to display students whose CGPA is greater than the average CGPA of all students.
+WITH AvgCGPA_CTE AS (
+    SELECT AVG(CGPA) AS Avg_CGPA
+    FROM StudentCareer
+)
+SELECT s.*
+FROM StudentCareer s
+CROSS JOIN AvgCGPA_CTE a
+WHERE s.CGPA > a.Avg_CGPA;
+
+-- Q38. Using a Common Table Expression (CTE), write an SQL query to display the top 5 students with the highest expected salary.
+WITH RankedSalary_CTE AS (
+    SELECT *,
+        ROW_NUMBER() OVER (ORDER BY Expected_Salary DESC) AS Salary_Row
+    FROM StudentCareer
+)
+SELECT *
+FROM RankedSalary_CTE
+WHERE Salary_Row <= 5;
+
+-- Q39. Write an SQL query to display the details of students having the highest expected salary.
+SELECT * FROM StudentCareer
+WHERE Expected_Salary = (
+    SELECT MAX(Expected_Salary) FROM StudentCareer
+);
+
+-- Q40. Write an SQL query to display students whose CGPA is greater than the average CGPA of all students.
+SELECT * FROM StudentCareer
+WHERE CGPA > (
+    SELECT AVG(CGPA) FROM StudentCareer
+);
+
+-- Q41. Write an SQL query to find the second highest expected salary among students.
+SELECT MAX(Expected_Salary) AS Second_Highest_Salary
+FROM StudentCareer
+WHERE Expected_Salary < (
+    SELECT MAX(Expected_Salary) FROM StudentCareer
+);
+
+-- Q42. Write an SQL query to find the most popular hobby among students.
+SELECT Hobby, COUNT(*) AS Total
+FROM StudentCareer
+GROUP BY Hobby
+ORDER BY Total DESC
+LIMIT 1;
+
+-- Q43. Write an SQL query to find the most popular job goal.
+SELECT Job_Goal, COUNT(*) AS Total
+FROM StudentCareer
+GROUP BY Job_Goal
+ORDER BY Total DESC
+LIMIT 1;
+
+-- Q44. Write an SQL query to find the most preferred job location among students.
+SELECT Preferred_Location, COUNT(*) AS Total
+FROM StudentCareer
+GROUP BY Preferred_Location
+ORDER BY Total DESC
+LIMIT 1;
+
+-- Q45. Department having the highest average CGPA
+SELECT Department, AVG(CGPA) AS Avg_CGPA
+FROM StudentCareer
+GROUP BY Department
+ORDER BY Avg_CGPA DESC
+LIMIT 1;
+ 
+-- Q46. Students who have completed more than 2 certifications
+SELECT * FROM StudentCareer
+WHERE Certifications > 2;
+ 
+-- Q47. Students interested in AI and having Advanced programming skills
+SELECT * FROM StudentCareer
+WHERE Interest = 'Artificial Intelligence'
+  AND Programming_Skill = 'Advanced';
+ 
+-- Q48. Students with LinkedIn Profile = 'Yes' AND Hackathon Participation = 'Yes'
+SELECT * FROM StudentCareer
+WHERE LinkedIn_Profile = 'Yes'
+  AND Hackathon_Participation = 'Yes';
+ 
+-- Q49. Top 5 students based on number of internships completed
+SELECT * FROM StudentCareer
+ORDER BY Internships DESC
+LIMIT 5;
+ 
+-- Q50. Students whose expected salary is greater than the average expected
+-- salary of their respective department (correlated subquery)
+SELECT
+    s.Student_ID,
+    s.Student_Name,
+    s.Department,
+    s.Expected_Salary
+FROM StudentCareer s
+WHERE s.Expected_Salary > (
+    SELECT AVG(s2.Expected_Salary)
+    FROM StudentCareer s2
+    WHERE s2.Department = s.Department
+);
